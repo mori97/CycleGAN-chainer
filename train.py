@@ -5,6 +5,7 @@ import chainer
 from chainer import optimizers, training
 from chainer.backends import cuda
 from chainer.iterators import SerialIterator
+from chainer.serializers import load_hdf5, save_hdf5
 from chainer.training import extensions
 import numpy as np
 from PIL import Image
@@ -136,12 +137,22 @@ def main():
     parser.add_argument('--out',
                         help='Directory to output the results',
                         type=str, default='./result')
+    parser.add_argument('--trained-models',
+                        help='Load trained models from directory which has '
+                             '"x_dis.hdf5", "y_dis.hdf5", "g_gen.hdf5", '
+                             '"f_gen.hdf5".',
+                        type=str, default=None)
     args = parser.parse_args()
 
     x_dis = Discriminator()
     y_dis = Discriminator()
     g_gen = Generator(n_blocks=args.n_blocks)
     f_gen = Generator(n_blocks=args.n_blocks)
+    if args.trained_models:
+        load_hdf5(os.path.join(args.trained_models, 'x_dis.hdf5'), x_dis)
+        load_hdf5(os.path.join(args.trained_models, 'y_dis.hdf5'), y_dis)
+        load_hdf5(os.path.join(args.trained_models, 'g_gen.hdf5'), g_gen)
+        load_hdf5(os.path.join(args.trained_models, 'f_gen.hdf5'), f_gen)
     if args.device >= 0:
         cuda.get_device_from_id(args.device).use()
         x_dis.to_gpu()
@@ -176,10 +187,10 @@ def main():
                    trigger=(2, 'epoch'))
     trainer.run()
 
-    chainer.serializers.save_hdf5('x_dis.hdf5', x_dis)
-    chainer.serializers.save_hdf5('y_dis.hdf5', y_dis)
-    chainer.serializers.save_hdf5('g_gen.hdf5', g_gen)
-    chainer.serializers.save_hdf5('f_gen.hdf5', f_gen)
+    save_hdf5('x_dis.hdf5', x_dis)
+    save_hdf5('y_dis.hdf5', y_dis)
+    save_hdf5('g_gen.hdf5', g_gen)
+    save_hdf5('f_gen.hdf5', f_gen)
 
 
 if __name__ == '__main__':
