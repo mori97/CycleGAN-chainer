@@ -2,8 +2,9 @@ import argparse
 import os
 
 import chainer
-from chainer import iterators, optimizers, training
+from chainer import optimizers, training
 from chainer.backends import cuda
+from chainer.iterators import SerialIterator
 from chainer.training import extensions
 import numpy as np
 from PIL import Image
@@ -14,7 +15,9 @@ from updater import CycleGANUpdater
 
 
 def output_fake_images(g_gen, f_gen, test_a_iter, test_b_iter, dst_dir):
-    """"""
+    """An extension for chainer's Trainer to generate fake images with given
+    Generators and test datasets.
+    """
     @training.make_extension()
     def _output_fake_images(trainer):
         dst_dir_fake_a = os.path.join(dst_dir, 'fakeA')
@@ -64,7 +67,7 @@ def make_dataset_iterator(d_path):
     :type d_path: str
 
     :return: A iterator of training set and a iterator of test set.
-    :rtype: tuple[Chainer.iterators.SerialIterator]
+    :rtype: tuple[UnpairedIterator, SerialIterator, SerialIterator]
     """
     exts = ('.jpg', '.png')
 
@@ -105,10 +108,10 @@ def make_dataset_iterator(d_path):
 
     train_iter = UnpairedIterator(dataset_train_a, dataset_train_b,
                                   batch_size=1, repeat=True)
-    test_a_iter = iterators.SerialIterator(dataset_test_a, batch_size=1,
-                                           repeat=False, shuffle=False)
-    test_b_iter = iterators.SerialIterator(dataset_test_b, batch_size=1,
-                                           repeat=False, shuffle=False)
+    test_a_iter = SerialIterator(dataset_test_a, batch_size=1,
+                                 repeat=False, shuffle=False)
+    test_b_iter = SerialIterator(dataset_test_b, batch_size=1,
+                                 repeat=False, shuffle=False)
     return train_iter, test_a_iter, test_b_iter
 
 
