@@ -116,21 +116,25 @@ def make_dataset_iterator(d_path):
 
 
 def main():
-    parser = argparse.ArgumentParser(prog='Train Cycle-GAN.')
+    parser = argparse.ArgumentParser(
+        description='Train Cycle-GAN.',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--dataset-path',
-                        help='',
+                        help='Directory of dataset which should have '
+                             '"trainA", "trainB", "testA" and "testB" '
+                             'directory',
                         type=str, required=True)
     parser.add_argument('--device',
-                        help='',
+                        help='GPU ID (negative ID indicates CPU)',
                         type=int, default=0)
     parser.add_argument('--epochs',
-                        help='',
+                        help='Number of epochs',
                         type=int, default=100)
     parser.add_argument('--n-blocks',
-                        help='',
+                        help='Number of Resnet Blocks (Generator)',
                         type=int, default=9)
     parser.add_argument('--out',
-                        help='',
+                        help='Directory to output the results',
                         type=str, default='./result')
     args = parser.parse_args()
 
