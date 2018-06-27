@@ -185,6 +185,8 @@ def main():
     trainer = training.Trainer(updater, (args.epochs, 'epoch'), out=args.out)
     trainer.extend(extensions.ProgressBar())
     trainer.extend(extensions.LogReport())
+    trainer.extend(extensions.snapshot(filename='trainer_snapshot.npz'),
+                   trigger=(10, 'epoch'))
     trainer.extend(output_fake_images(g_gen, f_gen,
                                       test_a_iter, test_b_iter,
                                       args.out),
