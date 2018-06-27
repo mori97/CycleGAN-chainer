@@ -88,8 +88,8 @@ class CycleGANUpdater(chainer.training.updaters.StandardUpdater):
         # Cycle consistency loss
         g_gen.cleargrads()
         f_gen.cleargrads()
-        cyc_loss_x = F.mean_absolute_error(f_gen(g_gen(x)), x)
-        cyc_loss_y = F.mean_absolute_error(g_gen(f_gen(y)), y)
+        cyc_loss_x = F.mean_absolute_error(f_gen(fake_y), x)
+        cyc_loss_y = F.mean_absolute_error(g_gen(fake_x), y)
         chainer.reporter.report({'cyc_loss': cyc_loss_x}, g_gen)
         chainer.reporter.report({'cyc_loss': cyc_loss_y}, f_gen)
         cyc_loss = self._lambda * (cyc_loss_x + cyc_loss_y)
