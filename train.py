@@ -130,13 +130,17 @@ def main():
                         type=int, default=0)
     parser.add_argument('--epochs',
                         help='Number of epochs',
-                        type=int, default=100)
+                        type=int, default=200)
     parser.add_argument('--n-blocks',
                         help='Number of Resnet Blocks (Generator)',
                         type=int, default=9)
     parser.add_argument('--out',
                         help='Directory to output the results',
                         type=str, default='./result')
+    parser.add_argument('--shift-lr-after-n-epochs',
+                        help='Linearly decay the learning rate to 0 after '
+                             'n epochs',
+                        type=int, default=None)
     parser.add_argument('--trained-models',
                         help='Load trained models from directory which has '
                              '"x_dis.hdf5", "y_dis.hdf5", "g_gen.hdf5", '
@@ -185,6 +189,27 @@ def main():
                                       test_a_iter, test_b_iter,
                                       args.out),
                    trigger=(2, 'epoch'))
+    if args.shift_lr_after_n_epochs:
+        trainer.extend(
+            extensions.LinearShift('alpha', (0.0002, 0),
+                                   (args.shift_lr_after_n_epochs, args.epochs),
+                                   opt_x_dis),
+            trigger=(1, 'epoch'))
+        trainer.extend(
+            extensions.LinearShift('alpha', (0.0002, 0),
+                                   (args.shift_lr_after_n_epochs, args.epochs),
+                                   opt_y_dis),
+            trigger=(1, 'epoch'))
+        trainer.extend(
+            extensions.LinearShift('alpha', (0.0002, 0),
+                                   (args.shift_lr_after_n_epochs, args.epochs),
+                                   opt_g_gen),
+            trigger=(1, 'epoch'))
+        trainer.extend(
+            extensions.LinearShift('alpha', (0.0002, 0),
+                                   (args.shift_lr_after_n_epochs, args.epochs),
+                                   opt_f_gen),
+            trigger=(1, 'epoch'))
     trainer.run()
 
     save_hdf5('x_dis.hdf5', x_dis)
