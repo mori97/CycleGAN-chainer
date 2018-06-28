@@ -217,10 +217,10 @@ def main():
             trigger=(1, 'epoch'))
     trainer.run()
 
-    save_hdf5('x_dis.hdf5', x_dis)
-    save_hdf5('y_dis.hdf5', y_dis)
-    save_hdf5('g_gen.hdf5', g_gen)
-    save_hdf5('f_gen.hdf5', f_gen)
+    save_hdf5(os.path.join(args.out, 'x_dis.hdf5'), x_dis)
+    save_hdf5(os.path.join(args.out, 'y_dis.hdf5'), y_dis)
+    save_hdf5(os.path.join(args.out, 'g_gen.hdf5'), g_gen)
+    save_hdf5(os.path.join(args.out, 'f_gen.hdf5'), f_gen)
 
 
 if __name__ == '__main__':
