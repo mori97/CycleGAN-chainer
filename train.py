@@ -131,6 +131,9 @@ def main():
     parser.add_argument('--epochs',
                         help='Number of epochs',
                         type=int, default=200)
+    parser.add_argument('--lambda',
+                        help='Coefficient of cycle consistency loss',
+                        type=float, default=10.0, dest='lambda_v')
     parser.add_argument('--n-blocks',
                         help='Number of Resnet Blocks (Generator)',
                         type=int, default=9)
@@ -180,7 +183,7 @@ def main():
         train_iter=train_iter,
         optimizer={'x_dis': opt_x_dis, 'y_dis': opt_y_dis,
                    'g_gen': opt_g_gen, 'f_gen': opt_f_gen},
-        device=args.device)
+        device=args.device, lambda_v=args.lambda_v)
 
     trainer = training.Trainer(updater, (args.epochs, 'epoch'), out=args.out)
     trainer.extend(extensions.ProgressBar())
