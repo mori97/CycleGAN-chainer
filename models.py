@@ -42,18 +42,22 @@ class Discriminator(chainer.Chain):
 class ResNetBlock(chainer.Chain):
     """A building block of ResNet.
     """
+    PAD_WIDTH_1 = ((0, 0), (0, 0), (1, 1), (1, 1))
+
     def __init__(self, n_channels, init_w=None):
         super(ResNetBlock, self).__init__()
         with self.init_scope():
             self.conv1 = L.Convolution2D(n_channels, n_channels,
-                                         pad=1, ksize=3, initialW=init_w)
+                                         ksize=3, initialW=init_w)
             self.bnorm1 = L.BatchNormalization(n_channels)
             self.conv2 = L.Convolution2D(n_channels, n_channels,
-                                         pad=1, ksize=3, initialW=init_w)
+                                         ksize=3, initialW=init_w)
             self.bnorm2 = L.BatchNormalization(n_channels)
 
     def __call__(self, x):
-        h = F.relu(self.bnorm1(self.conv1(x)))
+        h = F.pad(x, self.PAD_WIDTH_1, mode='reflect')
+        h = F.relu(self.bnorm1(self.conv1(h)))
+        h = F.pad(h, self.PAD_WIDTH_1, mode='reflect')
         h = self.bnorm2(self.conv2(h))
         return h + x
 
@@ -64,6 +68,7 @@ class Generator(chainer.Chain):
     Note: Batch normalization will be instance normalization
     if batch size is 1.
     """
+    PAD_WIDTH_3 = ((0, 0), (0, 0), (3, 3), (3, 3))
     U64_PAD_WIDTH = ((0, 0), (0, 0), (0, 1), (0, 1))
     U32_PAD_WIDTH = ((0, 0), (0, 0), (1, 0), (1, 0))
 
@@ -71,8 +76,7 @@ class Generator(chainer.Chain):
         super(Generator, self).__init__()
         init_w = chainer.initializers.Normal(scale=0.02)
         with self.init_scope():
-            self.c7s1_32_conv = L.Convolution2D(3, 32, ksize=7,
-                                                stride=1, pad=3,
+            self.c7s1_32_conv = L.Convolution2D(3, 32, ksize=7, stride=1,
                                                 initialW=init_w)
             self.c7s1_32_inorm = L.BatchNormalization(32)
             self.d64_conv = L.Convolution2D(32, 64, ksize=3, stride=2, pad=1,
@@ -90,12 +94,13 @@ class Generator(chainer.Chain):
                                                stride=2, pad=1,
                                                initialW=init_w)
             self.u32_inorm = L.BatchNormalization(32)
-            self.c7s1_3_conv = L.Convolution2D(32, 3, ksize=7, stride=1, pad=3,
+            self.c7s1_3_conv = L.Convolution2D(32, 3, ksize=7, stride=1,
                                                initialW=init_w)
             self.c7s1_3_inorm = L.BatchNormalization(3)
 
     def __call__(self, x):
-        h = F.relu(self.c7s1_32_inorm(self.c7s1_32_conv(x)))
+        h = F.pad(x, self.PAD_WIDTH_3, mode='reflect')
+        h = F.relu(self.c7s1_32_inorm(self.c7s1_32_conv(h)))
         h = F.relu(self.d64_inorm(self.d64_conv(h)))
         h = F.relu(self.d128_inorm(self.d128_conv(h)))
         h = self.r_blocks(h)
@@ -107,5 +112,6 @@ class Generator(chainer.Chain):
         h = F.pad(h, self.U32_PAD_WIDTH, 'constant', constant_values=0)
         h = F.relu(self.u32_inorm(h))
 
+        h = F.pad(h, self.PAD_WIDTH_3, mode='reflect')
         h = F.relu(self.c7s1_3_inorm(self.c7s1_3_conv(h)))
         return h

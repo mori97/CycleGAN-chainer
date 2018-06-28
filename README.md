@@ -7,5 +7,5 @@ A chainer implementation for [Unpaired Image-to-Image Translation using Cycle-Co
 ## Prerequisites
 - Linux
 - Python 3
-- Chainer >= v4.1.0 (v4) or Chainer >= 5.0.0.b1 (v5)
+- Chainer >= 5.0.0.b1 (v5)
 - CPU(not tested yet) or NVIDIA GPU + CUDA CuDNN
